@@ -162,13 +162,9 @@
     if (editor && value !== editor.getValue()) {
       const model = editor.getModel();
       if (model) {
-        // Use pushEditOperations instead of setValue to preserve undo history
-        const fullRange = model.getFullModelRange();
-        model.pushEditOperations(
-          [],
-          [{ range: fullRange, text: value }],
-          () => null
-        );
+        // Use setValue (clears undo stack) for external/programmatic updates.
+        // This prevents Ctrl+Z from undoing back to empty string.
+        model.setValue(value);
         // Re-enforce LF: Monaco may reset EOL to CRLF when content is replaced
         if (monaco) {
           model.setEOL(monaco.editor.EndOfLineSequence.LF);
@@ -371,7 +367,22 @@
     if (!editor) return;
     const model = editor.getModel();
     if (model) {
-      // Use pushEditOperations to preserve undo history
+      // Use model.setValue (clears undo stack) for programmatic/external updates.
+      // This prevents Ctrl+Z from undoing back to empty string.
+      model.setValue(newValue);
+      // Re-enforce LF after content replacement
+      if (monaco) {
+        model.setEOL(monaco.editor.EndOfLineSequence.LF);
+      }
+    }
+  }
+
+  export function setValueWithUndo(newValue: string) {
+    if (!editor) return;
+    const model = editor.getModel();
+    if (model) {
+      // Use pushEditOperations to preserve undo history for user-initiated actions
+      // (format, minify, fix, escape/unescape).
       const fullRange = model.getFullModelRange();
       model.pushEditOperations(
         [],

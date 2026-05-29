@@ -122,7 +122,7 @@
 
   function setContentValue(value: string) {
     onContentChange(value);
-    editor?.setValue(value);
+    editor?.setValueWithUndo(value);
   }
 
   export async function formatContent() {

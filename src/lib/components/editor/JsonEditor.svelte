@@ -832,7 +832,7 @@
   function replaceActiveEditorContent(value: string) {
     const currentTab = $activeTab;
     content = value;
-    monacoEditor?.setValue(value);
+    monacoEditor?.setValueWithUndo(value);
     if (currentTab) {
       tabsStore.updateTabContent(currentTab.id, value);
     }
@@ -1193,7 +1193,7 @@
       const parsed = JSON.parse(repaired);
       const formatted = JSON.stringify(parsed, null, tabSize);
       content = formatted;
-      monacoEditor?.setValue(formatted);
+      monacoEditor?.setValueWithUndo(formatted);
       const currentTab = $activeTab;
       if (currentTab) {
         tabsStore.updateTabContent(currentTab.id, formatted);
