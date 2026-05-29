@@ -333,6 +333,15 @@
   function commitTreeEdit(node: TreeNode) {
     if (!treeEdit || treeEdit.path !== node.path) return;
 
+    // No-op if value hasn't changed
+    const originalValue = treeEdit.kind === 'key'
+      ? node.key
+      : node.value === null ? 'null' : String(node.value);
+    if (treeEdit.input === originalValue) {
+      treeEdit = null;
+      return;
+    }
+
     const result = treeEdit.kind === 'key'
       ? createTreeKeyEdit(parsedPointers, node.path, treeEdit.input, node.siblingKeys)
       : createGridValueEdit(
