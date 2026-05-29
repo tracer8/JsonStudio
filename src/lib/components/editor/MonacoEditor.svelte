@@ -169,6 +169,10 @@
           [{ range: fullRange, text: value }],
           () => null
         );
+        // Re-enforce LF: Monaco may reset EOL to CRLF when content is replaced
+        if (monaco) {
+          model.setEOL(monaco.editor.EndOfLineSequence.LF);
+        }
       }
     }
   });
@@ -287,6 +291,11 @@
       formatOnPaste: false,
       formatOnType: false,
     });
+
+    // Force LF line endings so byte offsets are consistent across platforms.
+    // Monaco auto-detects EOL from content (CRLF on Windows), which causes
+    // getValue() to return CRLF even when LF content is set via pushEditOperations.
+    editor.getModel()?.setEOL(monacoInstance.editor.EndOfLineSequence.LF);
     
     // After assignment, $effect will automatically apply theme
     if (theme) {
@@ -369,6 +378,10 @@
         [{ range: fullRange, text: newValue }],
         () => null
       );
+      // Re-enforce LF after content replacement
+      if (monaco) {
+        model.setEOL(monaco.editor.EndOfLineSequence.LF);
+      }
     }
   }
 

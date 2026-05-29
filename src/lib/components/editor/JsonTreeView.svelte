@@ -70,6 +70,7 @@
   let treeError = $state('');
   let isLoading = $state(false);
   let previousContent = $state('');
+  let parsedContent = $state('');
   let parsedPointers = $state<Record<string, any>>({});
   let parsedDialect = $state<'JSON' | 'JSON5'>('JSON');
   let rootData = $state<unknown>(null);
@@ -108,6 +109,7 @@
       treeNodes = [];
       treeError = '';
       rootData = null;
+      parsedContent = '';
       parsedPointers = {};
       queryError = '';
       queryMatchedRoot = false;
@@ -121,6 +123,8 @@
 
     // Preserve expanded state if tree already has nodes (i.e. this is a rebuild, not initial load)
     const isRebuild = treeNodes.length > 0;
+
+    parsedContent = content;
 
     try {
       const parsed = parseJsonDocument(content);
@@ -351,7 +355,7 @@
     const result = treeEdit.kind === 'key'
       ? createTreeKeyEdit(parsedPointers, node.path, treeEdit.input, node.siblingKeys)
       : createGridValueEdit(
-          content,
+          parsedContent,
           parsedPointers,
           node.path,
           node.value,
@@ -404,7 +408,7 @@
   }
 
   async function copyEntry(node: TreeNode) {
-    const entryText = createTreeValueCopyText(content, parsedPointers, node.path, node.value);
+    const entryText = createTreeValueCopyText(parsedContent, parsedPointers, node.path, node.value);
 
     try {
       await navigator.clipboard.writeText(entryText);

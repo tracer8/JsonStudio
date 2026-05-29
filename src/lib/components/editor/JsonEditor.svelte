@@ -384,20 +384,24 @@
     const currentTab = getActiveTabFromState(state);
     if (!currentTab) return;
 
-    content = currentTab.content;
+    // Normalize line endings to LF to match Monaco's internal representation.
+    // Monaco normalizes CRLF → LF internally, so content must match to keep
+    // tree-view byte offsets in sync with model.getPositionAt().
+    const tabContent = currentTab.content.replace(/\r\n/g, '\n');
+    content = tabContent;
     stats = currentTab.stats;
 
     const editorValue = monacoEditor?.getValue();
-    if (editorValue !== undefined && editorValue !== currentTab.content) {
+    if (editorValue !== undefined && editorValue !== tabContent) {
       suppressNextEditorChange = true;
-      monacoEditor?.setValue(currentTab.content);
+      monacoEditor?.setValue(tabContent);
       queueMicrotask(() => {
         suppressNextEditorChange = false;
       });
     }
-    restoreEditorLanguage(currentTab.content, currentTab.stats);
-    checkJsonError(currentTab.content);
-    scheduleLogJsonDetection(currentTab.content, { eager: true });
+    restoreEditorLanguage(tabContent, currentTab.stats);
+    checkJsonError(tabContent);
+    scheduleLogJsonDetection(tabContent, { eager: true });
   }
   
   // Handle file watching for active tab
@@ -547,9 +551,10 @@
       
       const currentTab = $activeTab;
       if (currentTab) {
-        content = currentTab.content;
+        const tabContent = currentTab.content.replace(/\r\n/g, '\n');
+        content = tabContent;
         stats = currentTab.stats;
-        monacoEditor?.setValue(currentTab.content);
+        monacoEditor?.setValue(tabContent);
       }
       return;
     }
@@ -603,9 +608,10 @@
       } else {
         const currentTab = $activeTab;
         if (currentTab) {
-          content = currentTab.content;
+          const tabContent = currentTab.content.replace(/\r\n/g, '\n');
+          content = tabContent;
           stats = currentTab.stats;
-          monacoEditor?.setValue(currentTab.content);
+          monacoEditor?.setValue(tabContent);
         }
       }
       
@@ -644,9 +650,10 @@
       } else {
         const currentTab = $activeTab;
         if (currentTab) {
-          content = currentTab.content;
+          const tabContent = currentTab.content.replace(/\r\n/g, '\n');
+          content = tabContent;
           stats = currentTab.stats;
-          monacoEditor?.setValue(currentTab.content);
+          monacoEditor?.setValue(tabContent);
         }
       }
       
@@ -685,9 +692,10 @@
       } else {
         const currentTab = $activeTab;
         if (currentTab) {
-          content = currentTab.content;
+          const tabContent = currentTab.content.replace(/\r\n/g, '\n');
+          content = tabContent;
           stats = currentTab.stats;
-          monacoEditor?.setValue(currentTab.content);
+          monacoEditor?.setValue(tabContent);
         }
       }
       
