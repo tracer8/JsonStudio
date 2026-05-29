@@ -376,6 +376,10 @@ body {
   min-height: 26px;
 }
 
+.tree-node-content--editing {
+  align-items: flex-start;
+}
+
 /* Tree lines (Postman style) */
 .tree-lines {
   display: flex;
@@ -543,6 +547,13 @@ body {
   flex: 1;
   overflow: visible;
   white-space: nowrap;
+}
+
+.tree-node-content--editing .tree-key-value {
+  align-items: flex-start;
+  white-space: normal;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
 .tree-colon {

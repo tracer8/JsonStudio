@@ -85,7 +85,7 @@
   let isAllExpanded = $state(false);
   let helpOpen = $state(false);
   let treeEdit = $state<TreeEditState | null>(null);
-  let treeEditInput = $state<HTMLInputElement | null>(null);
+  let treeEditInput = $state<HTMLTextAreaElement | null>(null);
 
   // Build tree when content changes
   $effect(() => {
@@ -299,16 +299,28 @@
           : String(node.value),
       error: '',
     };
-    tick().then(() => treeEditInput?.focus());
+    tick().then(() => {
+      if (treeEditInput) {
+        treeEditInput.focus();
+        autoResizeTextarea(treeEditInput);
+      }
+    });
   }
 
   function handleTreeEditInput(event: Event) {
     if (!treeEdit) return;
+    const el = event.currentTarget as HTMLTextAreaElement;
     treeEdit = {
       ...treeEdit,
-      input: (event.currentTarget as HTMLInputElement).value,
+      input: el.value,
       error: '',
     };
+    autoResizeTextarea(el);
+  }
+
+  function autoResizeTextarea(el: HTMLTextAreaElement) {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
   }
 
   function handleTreeEditKeydown(event: KeyboardEvent, node: TreeNode) {
@@ -339,7 +351,12 @@
           ? result.error
           : 'Invalid edit',
       };
-      tick().then(() => treeEditInput?.focus());
+      tick().then(() => {
+        if (treeEditInput) {
+          treeEditInput.focus();
+          autoResizeTextarea(treeEditInput);
+        }
+      });
       return;
     }
 
@@ -653,9 +670,11 @@
         {@const childCount = getChildCount(node)}
         {@const showValue = node.type !== 'object' && node.type !== 'array'}
         
+        {@const isEditingValue = isEditing(node, 'value')}
         <div class="tree-node" class:tree-node-selected={isSelected} class:tree-node-matched={isMatched}>
-          <div 
+          <div
             class="tree-node-content"
+            class:tree-node-content--editing={isEditingValue}
             onclick={() => selectNode(node)}
             onkeydown={(e) => handleNodeKeydown(e, node)}
             role="button"
@@ -745,9 +764,9 @@
               {#if showValue}
                 <span class="tree-colon">:</span>
                 {#if isEditing(node, 'value')}
-                  <span class="tree-edit-field">
-                    <input
-                      class="tree-edit-input"
+                  <span class="tree-edit-field tree-edit-field--value">
+                    <textarea
+                      class="tree-edit-input tree-edit-textarea"
                       bind:this={treeEditInput}
                       value={treeEdit?.input ?? ''}
                       oninput={handleTreeEditInput}
@@ -755,7 +774,8 @@
                       onkeydown={(e) => handleTreeEditKeydown(e, node)}
                       onclick={(e) => e.stopPropagation()}
                       spellcheck="false"
-                    />
+                      rows="1"
+                    ></textarea>
                     {#if treeEdit?.error}
                       <span class="tree-edit-error">{treeEdit.error}</span>
                     {/if}
@@ -1144,6 +1164,23 @@
 
   .tree-edit-input:focus {
     box-shadow: 0 0 0 2px var(--accent-glow);
+  }
+
+  .tree-edit-field--value {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .tree-edit-textarea {
+    width: 100%;
+    min-height: 20px;
+    height: 20px;
+    padding: 1px 5px;
+    resize: none;
+    overflow: hidden;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-all;
   }
 
   .tree-edit-error {
