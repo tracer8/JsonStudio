@@ -111,12 +111,16 @@
       parsedPointers = {};
       queryError = '';
       queryMatchedRoot = false;
+      expandedNodes = new Set();
       isAllExpanded = false;
       return;
     }
 
     isLoading = true;
     treeError = '';
+
+    // Preserve expanded state if tree already has nodes (i.e. this is a rebuild, not initial load)
+    const isRebuild = treeNodes.length > 0;
 
     try {
       const parsed = parseJsonDocument(content);
@@ -127,11 +131,13 @@
       const nodes = parseToTree(parsed.data, parsed.pointers, '');
       treeNodes = nodes;
       
-      // Auto-expand first level
-      if (nodes.length > 0) {
-        expandedNodes = new Set(nodes.map(n => n.path));
+      if (!isRebuild) {
+        // Auto-expand first level only on initial load
+        if (nodes.length > 0) {
+          expandedNodes = new Set(nodes.map(n => n.path));
+        }
+        isAllExpanded = false;
       }
-      isAllExpanded = false;
     } catch (e) {
       treeError = e instanceof Error ? e.message : 'Failed to parse JSON';
       treeNodes = [];
